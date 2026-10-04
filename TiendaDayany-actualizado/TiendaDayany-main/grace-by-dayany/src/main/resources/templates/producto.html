@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${p.nombre})}"></head>
+<body>
+<svg th:replace="~{fragments/layout :: iconos}"></svg>
+<header th:replace="~{fragments/layout :: header(${activo})}"></header>
+
+<main class="wrap">
+    <nav class="migas" aria-label="Ruta">
+        <a th:href="@{/}">Inicio</a> <span>›</span> <a th:href="@{/catalogo}">Catálogo</a> <span>›</span>
+        <a th:href="@{/catalogo(categoria=${p.categoria})}" th:text="${p.categoria}">Blusas</a> <span>›</span>
+        <span th:text="${p.nombre}">Producto</span>
+    </nav>
+
+    <div class="aviso" th:if="${aviso != null}">
+        <svg class="ic ic-sm"><use href="#i-check"/></svg> <span th:text="${aviso}">Agregado</span>
+        <a th:href="@{/carrito}">Ver carrito</a>
+    </div>
+
+    <div class="prod-layout">
+        <!-- Galería -->
+        <div class="galeria" th:with="n=4">
+            <div class="miniaturas">
+                <button type="button" class="mini" th:each="i : ${#numbers.sequence(0,3)}" th:classappend="${i == 0} ? 'activa'" th:attr="data-i=${i}" aria-label="Ver foto">
+                    <div th:replace="~{fragments/layout :: foto(${p})}"></div>
+                </button>
+            </div>
+            <div class="principal">
+                <button type="button" class="fav fav-lg" th:attr="data-fav=${p.id}" aria-label="Agregar a favoritos"><svg class="ic"><use href="#i-heart"/></svg></button>
+                <div th:replace="~{fragments/layout :: foto(${p})}"></div>
+                <button type="button" class="flecha flecha-izq" id="g-prev" aria-label="Anterior"><svg class="ic"><use href="#i-chev-left"/></svg></button>
+                <button type="button" class="flecha flecha-der" id="g-next" aria-label="Siguiente"><svg class="ic"><use href="#i-chev-right"/></svg></button>
+                <div class="puntos"><i th:each="i : ${#numbers.sequence(0,3)}" th:classappend="${i == 0} ? 'activa'"></i></div>
+            </div>
+            <div class="beneficios beneficios-sm">
+                <div><svg class="ic"><use href="#i-truck"/></svg><span>Envíos a todo el Perú</span></div>
+                <div><svg class="ic"><use href="#i-card"/></svg><span>Pagos por Yape, Plin<br>y Transferencia</span></div>
+                <div><svg class="ic"><use href="#i-headset"/></svg><span>Atención personalizada</span></div>
+                <div><svg class="ic"><use href="#i-heart"/></svg><span>Ropa 100% femenina</span></div>
+            </div>
+        </div>
+
+        <!-- Información -->
+        <div class="prod-info">
+            <span class="tag-nuevo" th:if="${p.nuevo}">Nuevo</span>
+            <div class="prod-titulo">
+                <h1 th:text="${p.nombre}">Producto</h1>
+                <div class="rating">
+                    <span class="estrellas">★★★★★</span>
+                    <span><span th:text="${#numbers.formatDecimal(p.rating,1,1,'POINT')}">4.8</span> (<span th:text="${p.opiniones}">24</span> opiniones)</span>
+                </div>
+            </div>
+            <p class="precio-lg" th:text="'S/ ' + ${#numbers.formatDecimal(p.precio,1,2,'POINT')}">S/ 59.00</p>
+            <p class="cuenta"><svg class="ic ic-sm"><use href="#i-clock"/></svg> Ordena dentro de <strong id="cuenta">--:--:--</strong> para recibirlo el próximo día</p>
+
+            <form th:action="@{/carrito/agregar}" method="post" id="form-prod">
+                <input type="hidden" name="id" th:value="${p.id}">
+
+                <p class="label">Selecciona talla:</p>
+                <div class="tallas">
+                    <label class="talla" th:each="t, st : ${p.tallasLista}">
+                        <input type="radio" name="talla" th:value="${t}" th:checked="${st.first}"><span th:text="${t}">S</span>
+                    </label>
+                </div>
+
+                <p class="label">Selecciona color:</p>
+                <div class="colores">
+                    <label class="color" th:each="c, st : ${p.coloresLista}">
+                        <input type="radio" name="color" th:value="${c.nombre}" th:checked="${st.first}">
+                        <i th:style="'background:' + ${c.hex}"></i>
+                        <small th:text="${c.nombre}">Rosa</small>
+                    </label>
+                </div>
+
+                <div class="compra">
+                    <div>
+                        <p class="label">Cantidad:</p>
+                        <div class="qty">
+                            <button type="button" data-q="-1" aria-label="Menos"><svg class="ic ic-sm"><use href="#i-minus"/></svg></button>
+                            <input type="number" name="cantidad" value="1" min="1" max="10" readonly aria-label="Cantidad">
+                            <button type="button" data-q="1" aria-label="Más"><svg class="ic ic-sm"><use href="#i-plus"/></svg></button>
+                        </div>
+                    </div>
+                    <div class="botones">
+                        <div class="fila-btn">
+                            <button type="submit" name="destino" value="seguir" class="btn-primary btn-block"><svg class="ic"><use href="#i-cart"/></svg> Agregar al carrito</button>
+                            <button type="button" class="fav-btn" th:attr="data-fav=${p.id}" aria-label="Agregar a favoritos"><svg class="ic"><use href="#i-heart"/></svg></button>
+                        </div>
+                        <button type="submit" name="destino" value="whatsapp" class="btn-wa-outline"><svg class="ic"><use href="#i-whatsapp"/></svg> Comprar por WhatsApp</button>
+                    </div>
+                </div>
+            </form>
+
+            <details class="acordeon" open>
+                <summary><svg class="ic"><use href="#i-doc"/></svg> Detalles del producto <svg class="ic ic-sm chev"><use href="#i-chev-down"/></svg></summary>
+                <p th:text="${p.descripcion}">Descripción</p>
+                <dl class="ficha">
+                    <dt>Calce:</dt><dd th:text="${p.calce}">-</dd>
+                    <dt>Tela:</dt><dd th:text="${p.tela}">-</dd>
+                    <dt>Composición:</dt><dd th:text="${p.composicion}">-</dd>
+                    <dt>Cuidados:</dt><dd th:text="${p.cuidados}">-</dd>
+                </dl>
+            </details>
+            <details class="acordeon" open>
+                <summary><svg class="ic"><use href="#i-truck"/></svg> Envíos y devoluciones <svg class="ic ic-sm chev"><use href="#i-chev-down"/></svg></summary>
+                <div class="envio-ico">
+                    <span><svg class="ic"><use href="#i-truck"/></svg> Delivery a todo el Perú</span>
+                    <span><svg class="ic"><use href="#i-return"/></svg> Retorno: 7 días</span>
+                    <span><svg class="ic"><use href="#i-shield"/></svg> Pago seguro</span>
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <section th:if="${!relacionados.isEmpty()}">
+        <h2 class="titulo-seccion"><span>También te puede gustar</span></h2>
+        <div class="grid grid-4">
+            <th:block th:each="r : ${relacionados}">
+                <article th:replace="~{fragments/layout :: card(${r})}"></article>
+            </th:block>
+        </div>
+    </section>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div class="toast" id="toast" role="status"></div>
+<script th:src="@{/js/grace.js}"></script>
+</body>
+</html>

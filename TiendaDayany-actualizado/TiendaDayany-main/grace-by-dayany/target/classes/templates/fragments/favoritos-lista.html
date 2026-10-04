@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="lista" th:each="p : ${productos}">
+    <article th:replace="~{fragments/layout :: card(${p})}"></article>
+</th:block>
+</body>
+</html>

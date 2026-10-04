@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Tu estilo, tu esencia')}"></head>
+<body>
+<svg th:replace="~{fragments/layout :: iconos}"></svg>
+<header th:replace="~{fragments/layout :: header(${activo})}"></header>
+
+<main>
+    <section class="hero">
+        <div class="wrap hero-in">
+            <div class="hero-txt">
+                <p class="eyebrow">MODA FEMENINA</p>
+                <h1>Tu estilo,<br><em>tu esencia.</em></h1>
+                <p class="hero-sub">Blusas y jeans para cada momento<br>de tu vida.</p>
+                <a th:href="@{/catalogo}" class="btn-primary">Comprar ahora <svg class="ic ic-sm"><use href="#i-arrow-right"/></svg></a>
+            </div>
+            <div class="hero-img">
+                <span class="script hero-script">Nueva<br>Colección</span>
+                <div class="hero-arco"><svg class="ic"><use href="#i-hanger"/></svg><small>Foto de portada</small></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="wrap">
+        <div th:replace="~{fragments/layout :: beneficios}"></div>
+
+        <h2 class="titulo-seccion"><span>Categorías</span></h2>
+        <p class="sub-seccion">Encuentra lo que va contigo</p>
+        <div class="categorias">
+            <a class="cat cat-blusas" th:href="@{/blusas}">
+                <div class="cat-foto"><svg class="ic"><use href="#i-hanger"/></svg></div>
+                <div class="cat-info"><h3>Blusas</h3><span class="btn-outline-sm">Ver colección <svg class="ic ic-sm"><use href="#i-arrow-right"/></svg></span></div>
+            </a>
+            <a class="cat cat-jeans" th:href="@{/jeans}">
+                <div class="cat-foto"><svg class="ic"><use href="#i-hanger"/></svg></div>
+                <div class="cat-info"><h3>Jeans</h3><span class="btn-outline-sm">Ver colección <svg class="ic ic-sm"><use href="#i-arrow-right"/></svg></span></div>
+            </a>
+        </div>
+
+        <h2 class="titulo-seccion"><span>Productos destacados</span></h2>
+        <p class="sub-seccion">Las prendas más buscadas</p>
+        <div class="grid grid-6">
+            <th:block th:each="p : ${destacados}">
+                <article th:replace="~{fragments/layout :: card(${p})}"></article>
+            </th:block>
+        </div>
+
+        <section class="banner-tiktok">
+            <span class="tt-ico"><svg class="ic"><use href="#i-tiktok"/></svg></span>
+            <div>
+                <h3>¡Síguenos en TikTok Live!</h3>
+                <p>Nuevas llegadas, ofertas y mucho más.</p>
+                <a class="btn-primary btn-sm" href="https://www.tiktok.com/" target="_blank" rel="noopener">Ver TikTok <svg class="ic ic-sm"><use href="#i-arrow-right"/></svg></a>
+            </div>
+            <span class="script">No te lo<br>pierdas</span>
+        </section>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div class="toast" id="toast" role="status"></div>
+<script th:src="@{/js/grace.js}"></script>
+</body>
+</html>

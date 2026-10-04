@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Mis favoritos')}"></head>
+<body>
+<svg th:replace="~{fragments/layout :: iconos}"></svg>
+<header th:replace="~{fragments/layout :: header(${activo})}"></header>
+<main class="wrap">
+    <div class="carrito-titulo">
+        <a th:href="@{/catalogo}" class="volver" aria-label="Volver"><svg class="ic ic-lg"><use href="#i-arrow-left"/></svg></a>
+        <div><h1>Mis favoritos <svg class="ic ic-heart-title"><use href="#i-heart"/></svg></h1><p>Las prendas que guardaste en este dispositivo</p></div>
+    </div>
+    <div id="fav-lista" class="grid grid-4" th:attr="data-url=@{/favoritos/lista}"></div>
+    <div class="vacio" id="fav-vacio" hidden>
+        <p>Aún no tienes favoritos. Toca el corazón en cualquier prenda para guardarla.</p>
+        <a th:href="@{/catalogo}" class="btn-primary btn-sm">Ver catálogo</a>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div class="toast" id="toast" role="status"></div>
+<script th:src="@{/js/grace.js}"></script>
+</body>
+</html>

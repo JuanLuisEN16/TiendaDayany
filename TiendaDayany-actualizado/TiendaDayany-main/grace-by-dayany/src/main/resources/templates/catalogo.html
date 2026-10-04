@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Catálogo')}"></head>
+<body>
+<svg th:replace="~{fragments/layout :: iconos}"></svg>
+<header th:replace="~{fragments/layout :: header(${activo})}"></header>
+
+<main>
+    <section class="banner-cat">
+        <div class="wrap banner-in">
+            <div>
+                <h1 th:text="${categoria == '' ? 'Catálogo' : categoria}">Catálogo</h1>
+                <p>Descubre todas nuestras prendas</p>
+            </div>
+            <span class="script">Tu estilo,<br>tu esencia</span>
+        </div>
+    </section>
+
+    <div class="wrap">
+        <nav class="migas" aria-label="Ruta">
+            <a th:href="@{/}">Inicio</a> <span>›</span> <a th:href="@{/catalogo}">Catálogo</a>
+            <th:block th:if="${categoria != ''}"><span>›</span> <span th:text="${categoria}">Blusas</span></th:block>
+        </nav>
+
+        <div class="cat-layout">
+            <aside class="filtros">
+                <form th:action="@{/catalogo}" method="get" id="form-filtros">
+                    <input type="hidden" name="orden" th:value="${orden}">
+                    <input type="hidden" name="q" th:value="${q}" th:if="${q != ''}">
+
+                    <details class="filtro" open>
+                        <summary>Filtrar por categoría <svg class="ic ic-sm"><use href="#i-chev-down"/></svg></summary>
+                        <label class="chk"><input type="radio" name="categoria" value="" th:checked="${categoria == ''}"><span>Todas</span></label>
+                        <label class="chk"><input type="radio" name="categoria" value="Blusas" th:checked="${categoria == 'Blusas'}"><span>Blusas</span></label>
+                        <label class="chk"><input type="radio" name="categoria" value="Jeans" th:checked="${categoria == 'Jeans'}"><span>Jeans</span></label>
+                    </details>
+
+                    <details class="filtro" open>
+                        <summary>Filtrar por talla <svg class="ic ic-sm"><use href="#i-chev-down"/></svg></summary>
+                        <label class="chk" th:each="t : ${tallasDisponibles}">
+                            <input type="checkbox" name="talla" th:value="${t}" th:checked="${tallasSel.contains(t)}"><span th:text="${t}">S</span>
+                        </label>
+                    </details>
+
+                    <details class="filtro" open>
+                        <summary>Filtrar por color <svg class="ic ic-sm"><use href="#i-chev-down"/></svg></summary>
+                        <div class="swatches">
+                            <label class="sw" th:each="c : ${coloresDisponibles}" th:title="${c.nombre}">
+                                <input type="checkbox" name="color" th:value="${c.nombre}" th:checked="${coloresSel.contains(c.nombre)}">
+                                <span th:style="'background:' + ${c.hex}"></span>
+                            </label>
+                        </div>
+                    </details>
+
+                    <details class="filtro" open>
+                        <summary>Filtrar por precio <svg class="ic ic-sm"><use href="#i-chev-down"/></svg></summary>
+                        <select name="precio" class="select">
+                            <option value="" th:selected="${precio == ''}">Todos los precios</option>
+                            <option value="0-60" th:selected="${precio == '0-60'}">Hasta S/ 60</option>
+                            <option value="60-90" th:selected="${precio == '60-90'}">S/ 60 – S/ 90</option>
+                            <option value="90+" th:selected="${precio == '90+'}">Más de S/ 90</option>
+                        </select>
+                    </details>
+
+                    <button type="submit" class="btn-primary btn-sm btn-aplicar">Aplicar filtros</button>
+                    <a th:href="@{/catalogo}" class="limpiar">Limpiar filtros</a>
+                </form>
+                <div class="frase-rosa"><span class="script">Moda que<br>resalta tu esencia</span></div>
+            </aside>
+
+            <section>
+                <div class="barra-orden">
+                    <p>Mostrando <strong th:text="${resultado.productos.size()}">12</strong> de <strong th:text="${resultado.total}">28</strong> productos</p>
+                    <form th:action="@{/catalogo}" method="get" id="form-orden">
+                        <input type="hidden" name="categoria" th:value="${categoria}">
+                        <input type="hidden" name="precio" th:value="${precio}">
+                        <input type="hidden" name="q" th:value="${q}">
+                        <input type="hidden" name="talla" th:each="t : ${tallasSel}" th:value="${t}">
+                        <input type="hidden" name="color" th:each="c : ${coloresSel}" th:value="${c}">
+                        <select name="orden" class="select select-orden" aria-label="Ordenar por">
+                            <option value="recientes" th:selected="${orden == 'recientes'}">Ordenar por: Más recientes</option>
+                            <option value="precio_asc" th:selected="${orden == 'precio_asc'}">Precio: menor a mayor</option>
+                            <option value="precio_desc" th:selected="${orden == 'precio_desc'}">Precio: mayor a menor</option>
+                            <option value="nombre" th:selected="${orden == 'nombre'}">Nombre (A–Z)</option>
+                        </select>
+                    </form>
+                </div>
+
+                <div class="vacio" th:if="${resultado.total == 0}">
+                    <p>No encontramos prendas con esos filtros.</p>
+                    <a th:href="@{/catalogo}" class="btn-primary btn-sm">Ver todo el catálogo</a>
+                </div>
+
+                <div class="grid grid-4" th:if="${resultado.total > 0}">
+                    <th:block th:each="p : ${resultado.productos}">
+                        <article th:replace="~{fragments/layout :: card(${p})}"></article>
+                    </th:block>
+                </div>
+
+                <nav class="paginacion" th:if="${resultado.paginas > 1}" aria-label="Paginación">
+                    <a th:if="${resultado.pagina > 1}" th:href="@{/catalogo(categoria=${categoria},talla=${tallasSel},color=${coloresSel},precio=${precio},q=${q},orden=${orden},page=${resultado.pagina - 1})}" aria-label="Anterior"><svg class="ic ic-sm"><use href="#i-chev-left"/></svg></a>
+                    <a th:each="n : ${#numbers.sequence(1, resultado.paginas)}" th:text="${n}"
+                       th:classappend="${n == resultado.pagina} ? 'activa'"
+                       th:href="@{/catalogo(categoria=${categoria},talla=${tallasSel},color=${coloresSel},precio=${precio},q=${q},orden=${orden},page=${n})}">1</a>
+                    <a th:if="${resultado.pagina < resultado.paginas}" th:href="@{/catalogo(categoria=${categoria},talla=${tallasSel},color=${coloresSel},precio=${precio},q=${q},orden=${orden},page=${resultado.pagina + 1})}" aria-label="Siguiente"><svg class="ic ic-sm"><use href="#i-chev-right"/></svg></a>
+                </nav>
+            </section>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div class="toast" id="toast" role="status"></div>
+<script th:src="@{/js/grace.js}"></script>
+</body>
+</html>

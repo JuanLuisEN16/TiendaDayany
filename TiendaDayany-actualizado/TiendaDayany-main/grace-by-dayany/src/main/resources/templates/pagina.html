@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${titulo})}"></head>
+<body>
+<svg th:replace="~{fragments/layout :: iconos}"></svg>
+<header th:replace="~{fragments/layout :: header(${activo})}"></header>
+<main class="wrap">
+    <section class="panel pagina-info">
+        <h1 th:text="${titulo}">Título</h1>
+        <p th:text="${texto}">Texto</p>
+        <a th:href="${waContacto}" class="btn-primary btn-wa" target="_blank" rel="noopener"><svg class="ic"><use href="#i-whatsapp"/></svg> Escríbenos por WhatsApp</a>
+        <p class="script gracias">Tu estilo, tu esencia</p>
+    </section>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div class="toast" id="toast" role="status"></div>
+<script th:src="@{/js/grace.js}"></script>
+</body>
+</html>

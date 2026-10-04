@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Carrito de compras')}"></head>
+<body>
+<svg th:replace="~{fragments/layout :: iconos}"></svg>
+<header th:replace="~{fragments/layout :: header(${activo})}"></header>
+
+<main class="wrap">
+    <div class="carrito-titulo">
+        <a th:href="@{/catalogo}" class="volver" aria-label="Volver al catálogo"><svg class="ic ic-lg"><use href="#i-arrow-left"/></svg></a>
+        <div>
+            <h1>Carrito de compras <svg class="ic ic-heart-title"><use href="#i-heart"/></svg></h1>
+            <p>Revisa tus productos antes de continuar con el pago</p>
+        </div>
+        <span class="script script-der">Tu estilo,<br>tu esencia</span>
+    </div>
+
+    <div class="vacio vacio-carrito" th:if="${carrito.vacio}">
+        <svg class="ic ic-xl"><use href="#i-bag"/></svg>
+        <h2>Tu carrito está vacío</h2>
+        <p>Descubre nuestras blusas y jeans y agrega tus favoritos.</p>
+        <a th:href="@{/catalogo}" class="btn-primary">Ir al catálogo <svg class="ic ic-sm"><use href="#i-arrow-right"/></svg></a>
+    </div>
+
+    <div class="carrito-layout" th:unless="${carrito.vacio}">
+        <section class="panel">
+            <ol class="pasos">
+                <li class="paso activo"><b>1</b><span>Envío</span></li>
+                <li class="paso"><b>2</b><span>Pago</span></li>
+                <li class="paso"><b>3</b><span>Confirmación</span></li>
+            </ol>
+
+            <div class="tabla">
+                <div class="tabla-cab"><span>Producto</span><span>Precio</span><span>Cantidad</span><span>Subtotal</span><span></span></div>
+                <div class="tabla-fila" th:each="it, st : ${carrito.items}">
+                    <div class="t-prod">
+                        <div class="miniatura" th:style="'--c:' + ${it.colorHex}">
+                            <img th:if="${it.imagen != null}" th:src="@{${it.imagen}}" th:alt="${it.nombre}">
+                            <svg th:unless="${it.imagen != null}" class="ic"><use href="#i-hanger"/></svg>
+                        </div>
+                        <div>
+                            <strong th:text="${it.nombre}">Blusa</strong>
+                            <small>Talla: <span th:text="${it.talla}">M</span></small>
+                            <small>Color: <span th:text="${it.color}">Rosa</span></small>
+                        </div>
+                    </div>
+                    <div class="t-precio" th:text="'S/ ' + ${#numbers.formatDecimal(it.precio,1,2,'POINT')}">S/ 59.00</div>
+                    <form th:action="@{/carrito/cambiar}" method="post" class="qty">
+                        <input type="hidden" name="indice" th:value="${st.index}">
+                        <button type="submit" name="delta" value="-1" aria-label="Menos"><svg class="ic ic-sm"><use href="#i-minus"/></svg></button>
+                        <span th:text="${it.cantidad}">1</span>
+                        <button type="submit" name="delta" value="1" aria-label="Más"><svg class="ic ic-sm"><use href="#i-plus"/></svg></button>
+                    </form>
+                    <div class="t-sub" th:text="'S/ ' + ${#numbers.formatDecimal(it.subtotal,1,2,'POINT')}">S/ 59.00</div>
+                    <form th:action="@{/carrito/eliminar}" method="post">
+                        <input type="hidden" name="indice" th:value="${st.index}">
+                        <button type="submit" class="btn-trash" aria-label="Quitar producto"><svg class="ic"><use href="#i-trash"/></svg></button>
+                    </form>
+                </div>
+            </div>
+
+            <form th:action="@{/carrito/enviar}" method="post" th:object="${pedido}" novalidate>
+                <h3 class="h-sec">Método de pago</h3>
+                <p class="ayuda">Selecciona tu método de pago</p>
+                <div class="metodos">
+                    <label class="metodo">
+                        <input type="radio" th:field="*{metodoPago}" value="Visa">
+                        <span class="m-radio"></span>
+                        <span class="m-logo m-visa">VISA</span>
+                        <small>Tarjeta de crédito / débito</small>
+                    </label>
+                    <label class="metodo">
+                        <input type="radio" th:field="*{metodoPago}" value="Yape">
+                        <span class="m-radio"></span>
+                        <span class="m-logo m-yape">yape</span>
+                        <small>Yape</small>
+                    </label>
+                </div>
+                <p class="error" th:if="${#fields.hasErrors('metodoPago')}" th:errors="*{metodoPago}"></p>
+
+                <h3 class="h-sec">Datos de envío y pago</h3>
+                <div class="form-grid">
+                    <div class="campo" th:classappend="${#fields.hasErrors('nombre')} ? 'tiene-error'">
+                        <label for="nombre">Nombre completo</label>
+                        <input id="nombre" type="text" th:field="*{nombre}" placeholder="Ej. Ana Torres" autocomplete="name">
+                        <p class="error" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></p>
+                    </div>
+                    <div class="campo" th:classappend="${#fields.hasErrors('celular')} ? 'tiene-error'">
+                        <label for="celular">Número de celular</label>
+                        <input id="celular" type="tel" th:field="*{celular}" placeholder="Ej. 912 345 678" autocomplete="tel">
+                        <p class="error" th:if="${#fields.hasErrors('celular')}" th:errors="*{celular}"></p>
+                    </div>
+                    <div class="campo" th:classappend="${#fields.hasErrors('direccion')} ? 'tiene-error'">
+                        <label for="direccion">Dirección de envío</label>
+                        <input id="direccion" type="text" th:field="*{direccion}" placeholder="Ej. Av. Principal 123, Lima" autocomplete="street-address">
+                        <p class="error" th:if="${#fields.hasErrors('direccion')}" th:errors="*{direccion}"></p>
+                    </div>
+                    <div class="campo" th:classappend="${#fields.hasErrors('distrito')} ? 'tiene-error'">
+                        <label for="distrito">Distrito</label>
+                        <select id="distrito" th:field="*{distrito}">
+                            <option value="">Selecciona un distrito</option>
+                            <option th:each="d : ${distritos}" th:value="${d}" th:text="${d}">Los Olivos</option>
+                        </select>
+                        <p class="error" th:if="${#fields.hasErrors('distrito')}" th:errors="*{distrito}"></p>
+                    </div>
+                </div>
+
+                <p class="legal"><svg class="ic ic-sm"><use href="#i-lock"/></svg> Al continuar, aceptas nuestros <a href="#">Términos</a> y <a href="#">Condiciones</a> y <a href="#">Política de Privacidad</a>.</p>
+
+                <div class="acciones-form">
+                    <a th:href="@{/catalogo}" class="btn-outline"><svg class="ic ic-sm"><use href="#i-arrow-left"/></svg> Seguir comprando</a>
+                    <button type="submit" class="btn-primary btn-wa"><svg class="ic"><use href="#i-whatsapp"/></svg> Enviar pedido por WhatsApp <svg class="ic ic-sm"><use href="#i-arrow-right"/></svg></button>
+                </div>
+            </form>
+        </section>
+
+        <aside class="panel resumen">
+            <h2><svg class="ic ic-lg"><use href="#i-bag"/></svg> Resumen del pedido</h2>
+            <div class="res-item" th:each="it : ${carrito.items}">
+                <div class="miniatura" th:style="'--c:' + ${it.colorHex}">
+                    <img th:if="${it.imagen != null}" th:src="@{${it.imagen}}" th:alt="${it.nombre}">
+                    <svg th:unless="${it.imagen != null}" class="ic"><use href="#i-hanger"/></svg>
+                </div>
+                <div>
+                    <strong th:text="${it.nombre}">Blusa</strong>
+                    <small>Talla: <span th:text="${it.talla}">M</span> &nbsp;|&nbsp; Color: <span th:text="${it.color}">Rosa</span></small>
+                    <span class="rosa" th:text="'S/ ' + ${#numbers.formatDecimal(it.precio,1,2,'POINT')}">S/ 59.00</span>
+                    <small>Cant: <span th:text="${it.cantidad}">1</span></small>
+                </div>
+            </div>
+            <dl class="totales">
+                <dt>Subtotal</dt><dd th:text="'S/ ' + ${#numbers.formatDecimal(carrito.subtotal,1,2,'POINT')}">S/ 59.00</dd>
+                <dt>Descuento</dt><dd th:text="'S/ ' + ${#numbers.formatDecimal(carrito.descuento,1,2,'POINT')}">S/ 0.00</dd>
+                <dt>Envío</dt><dd th:text="'S/ ' + ${#numbers.formatDecimal(carrito.envio,1,2,'POINT')}">S/ 0.00</dd>
+            </dl>
+            <div class="total"><span>Total</span><strong th:text="'S/ ' + ${#numbers.formatDecimal(carrito.total,1,2,'POINT')}">S/ 59.00</strong></div>
+            <div class="segura"><svg class="ic ic-lg"><use href="#i-shield"/></svg><div><strong>Compra segura</strong><small>Tus datos están protegidos</small></div></div>
+            <p class="script gracias">Gracias por ser parte<br>de Grace</p>
+        </aside>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div class="toast" id="toast" role="status"></div>
+<script th:src="@{/js/grace.js}"></script>
+</body>
+</html>
